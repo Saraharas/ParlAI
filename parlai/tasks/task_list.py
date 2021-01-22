@@ -10,6 +10,20 @@ tags associated with them.
 
 task_list = [
     {
+        "id": "TopicalChat",
+        "display_name": "TopicalChat",
+        "task": "topical_chat",
+        "tags": [ "all" ],
+        "description": "TopicalChat data"
+    },{
+        "id": "RedditGK",
+        "display_name": "RedditGK",
+        "task": "redditgk",
+        "tags": [ "all" ],
+        "description": "Reddit with GK"
+    },
+
+    {
         "id": "AmazonQA",
         "display_name": "AmazonQA",
         "task": "amazon_qa",
