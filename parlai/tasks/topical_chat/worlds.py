@@ -17,7 +17,7 @@ from parlai.core.worlds import World, validate
 from parlai.tasks.wizard_of_wikipedia.agents import TOKEN_KNOWLEDGE, TOKEN_END_KNOWLEDGE
 
 
-class InteractiveGeneratorWorld(World):
+class GeneratorWorld(World):
     
     def __init__(self, opt, agents, shared=None):
         super().__init__(opt, agents, shared)
