@@ -32,7 +32,7 @@ class InteractiveGeneratorWorld(World):
         try:
             act = Message()
             act['text'] = f"{TOKEN_KNOWLEDGE} {user_input['checked_sentence']} {TOKEN_END_KNOWLEDGE}{self.opt['gold_knowledge_delimiter']}{user_input['text']}"
-            act['episode_done'] = False
+            act['episode_done'] = True
         except StopIteration:
             print('[ EPISODE CHAT DONE ]')    
             self.model_agent.reset()
