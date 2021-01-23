@@ -22,10 +22,17 @@ class GeneratorWorld(World):
     def __init__(self, opt, agents, shared=None):
         super().__init__(opt, agents, shared)
         self.opt = opt
-        self.model_agent = self.agents[0]    
+        self.teacher_agent = self.agents[0]
+        self.model_agent = self.agents[1]   
 
     def parley(self, user_input):
         #user_input = {'topic': str, 'knowledge': str, 'text': str, 'history': [str, str,..]}
+        user_input = {
+            'checked_sentence': self.opt['user_input_checked_sentence'],
+            'knowledge': self.opt['user_input_knowledge'],
+            'text': self.opt['user_input_text'],
+            'history': self.opt['user_input_history'].split('\n') if self.opt['user_input_history'] else ['']
+        }
         for utterance in user_input['history']:
             self.model_agent.history.add_reply(utterance.strip())
 

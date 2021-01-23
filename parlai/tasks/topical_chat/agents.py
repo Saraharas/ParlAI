@@ -125,12 +125,16 @@ class TopicalChatTeacher(FixedDialogTeacher):
         task = opt.get('task', 'topical_chat')
         #split = task.split(':')
         #split = split[2] if len(split) == 3 else 'random_split'
-        opt['task'] = 'topical_chat'
-        if shared and 'data' in shared:
-            self.data = shared['data']
+        if opt.get('data_regime', '') == 'interactive':
+            self.data = {}
+            print('interactive mode: no task data needed')
         else:
-            self.data_path = _path(opt)
-            self._setup_data()
+            self.opt['task'] = 'topical_chat'
+            if shared and 'data' in shared:
+                self.data = shared['data']
+            else:
+                self.data_path = _path(opt)
+                self._setup_data()
         self.num_exs = sum(len(d['dialog']) for d in self.data)
         self.reset()
 
