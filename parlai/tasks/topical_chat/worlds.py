@@ -25,7 +25,7 @@ class GeneratorWorld(World):
         self.teacher_agent = self.agents[0]
         self.model_agent = self.agents[1]   
 
-    def parley(self, user_input):
+    def parley(self):
         #user_input = {'topic': str, 'knowledge': str, 'text': str, 'history': [str, str,..]}
         user_input = {
             'checked_sentence': self.opt['user_input_checked_sentence'],
