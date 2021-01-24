@@ -26,6 +26,8 @@ import pkgutil
 import parlai.scripts
 import parlai.utils.logging as logging
 from parlai.core.loader import register_script, SCRIPT_REGISTRY  # noqa: F401
+from parlai.core.agents import create_agent
+from parlai.core.worlds import create_task
 
 
 def setup_script_registry():
@@ -35,6 +37,89 @@ def setup_script_registry():
     for module in pkgutil.iter_modules(parlai.scripts.__path__, 'parlai.scripts.'):
         importlib.import_module(module.name)
 
+
+class ParlaiPreloadModelScript(object):
+    """
+    A ParlAI script is a standardized form of access.
+    """
+
+    parser: ParlaiParser
+
+    @classmethod
+    @abstractmethod
+    def setup_args(cls) -> ParlaiParser:
+        """
+        Create the parser with args.
+        """
+        parser = ParlaiParser(True, True, 'Get response from model in knowledge grounded conversation')
+        
+        parser.add_argument(
+            '--data-regime',
+            type=str,
+            default='interactive',
+            help='User input history',
+        )
+        return parser
+
+
+    def __init__(self, opt: Opt):
+        self.opt = opt
+
+    @abstractmethod
+    def run(self,user_input):
+        """
+        The main method.
+        Must be implemented by the script writer.
+        """
+        world = create_task(self.opt, self.agent)
+        response = world.parley(user_input)
+        return response
+
+
+    @classmethod
+    def _run_kwargs(cls, kwargs: Dict[str, Any]):
+        """
+        Construct and run the script using kwargs, pseudo-parsing them.
+        """
+        parser = cls.setup_args()
+        opt = parser.parse_kwargs(**kwargs)
+        return cls._run_from_parser_and_opt(opt, parser)
+
+    @classmethod
+    def _run_args(cls, args: Optional[List[str]] = None):
+        """
+        Construct and run the script using args, defaulting to getting from CLI.
+        """
+        parser = cls.setup_args()
+        opt = parser.parse_args(args=args)
+        return cls._run_from_parser_and_opt(opt, parser)
+
+    @classmethod
+    def _run_from_parser_and_opt(cls, opt: Opt, parser: ParlaiParser):
+        script = cls(opt)
+        script.parser = parser
+        script.agent = create_agent(script.opt, requireModelExists=True)
+        return script #.run()
+
+    @classmethod
+    def main(cls, *args, **kwargs):
+        """
+        Run the program, possibly with some given args.
+        You may provide command line args in the form of strings, or
+        options. For example:
+        >>> MyScript.main(['--task', 'convai2'])
+        >>> MyScript.main(task='convai2')
+        You may not combine both args and kwargs.
+        """
+        assert not (bool(args) and bool(kwargs))
+        if args:
+            return cls._run_args(args)
+        elif kwargs:
+            return cls._run_kwargs(kwargs)
+        else:
+            return cls._run_args(None)
+
+        
 
 class ParlaiScript(object):
     """
