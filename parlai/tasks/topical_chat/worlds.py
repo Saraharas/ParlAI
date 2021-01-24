@@ -21,24 +21,45 @@ class GeneratorWorld(World):
     
     def __init__(self, opt, agents, shared=None):
         super().__init__(opt, agents, shared)
+        print('Gen world activated')
         self.opt = opt
         self.teacher_agent = self.agents[0]
         self.model_agent = self.agents[1]   
 
-    def parley(self):
+    def parley(self, user_input):
         #user_input = {'topic': str, 'knowledge': str, 'text': str, 'history': [str, str,..]}
-        user_input = {
-            'checked_sentence': self.opt['user_input_checked_sentence'],
-            'knowledge': self.opt['user_input_knowledge'],
-            'text': self.opt['user_input_text'],
-            'history': self.opt['user_input_history'].split('\n') if self.opt['user_input_history'] else ['']
-        }
         for utterance in user_input['history']:
             self.model_agent.history.add_reply(utterance.strip())
 
         try:
             act = Message()
             act['text'] = f"{TOKEN_KNOWLEDGE} {user_input['checked_sentence']} {TOKEN_END_KNOWLEDGE}{self.opt['gold_knowledge_delimiter']}{user_input['text']}"
+            act['episode_done'] = True
+        except StopIteration:
+            print('[ EPISODE CHAT DONE ]')    
+            self.model_agent.reset()
+            return
+        # model observes knowledge and human (apprentice) act
+        self.model_agent.observe(validate(act))
+        return self.model_agent.act()
+
+    
+class InteractiveGeneratorWorld(World):
+    
+    def __init__(self, opt, agents, shared=None):
+        super().__init__(opt, agents, shared)
+        print('interactive world activated')
+        self.opt = opt
+        self.model_agent = self.agents[0]
+        
+    def parley(self, user_input):
+        #user_input = {'topic': str, 'knowledge': str, 'text': str, 'history': [str, str,..]}
+        for utterance in user_input['history']:
+            self.model_agent.history.add_reply(utterance.strip())
+        try:
+            act = Message()
+            act['id'] = 'TopicalChat GeneratorTeacher'
+            act['text'] = f"{TOKEN_KNOWLEDGE} {user_input['knowledge'].strip()} {TOKEN_END_KNOWLEDGE}{self.opt['gold_knowledge_delimiter']}{user_input['text']}"
             act['episode_done'] = True
         except StopIteration:
             print('[ EPISODE CHAT DONE ]')    
