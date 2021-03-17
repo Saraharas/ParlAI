@@ -26,7 +26,8 @@ class GeneratorWorld(World):
         self.teacher_agent = self.agents[0]
         self.model_agent = self.agents[1]   
 
-    def parley(self, user_input):
+    def parley_one_sample(self, user_input):
+        print('one sample parley')
         #user_input = {'topic': str, 'knowledge': str, 'text': str, 'history': [str, str,..]}
         for utterance in user_input['history']:
             self.model_agent.history.add_reply(utterance.strip())
@@ -42,6 +43,33 @@ class GeneratorWorld(World):
         # model observes knowledge and human (apprentice) act
         self.model_agent.observe(validate(act))
         return self.model_agent.act()
+
+
+    def parley(self, user_input):
+        # with batching
+        print('batching parley')
+        #user_input = {'inputs': [{'topic': str, 'knowledge': str, 'text': str}, {'topic': str, 'knowledge': str, 'text': str} ...], 'history': [str, str,..]}
+        try:
+            batch_act = []
+            for inp in user_input['inputs']:
+                self.model_agent.history.reset()
+                for utterance in user_input['history']:
+                    self.model_agent.history.add_reply(utterance.strip())
+        
+                act = Message()
+                act['text'] = f"{TOKEN_KNOWLEDGE} {inp['checked_sentence']} {TOKEN_END_KNOWLEDGE}{self.opt['gold_knowledge_delimiter']}{inp['text']}"
+                act['episode_done'] = False
+                
+                batch_act.append(self.model_agent.observe(validate(act)))
+
+        except StopIteration:
+            print('[ EPISODE CHAT DONE ]')    
+            self.model_agent.reset()
+            return
+        # model observes knowledge and human (apprentice) act
+        #print(batch_act)
+        return self.model_agent.batch_act(batch_act)
+
 
     
 class InteractiveGeneratorWorld(World):
