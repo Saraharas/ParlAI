@@ -45,9 +45,9 @@ class GeneratorWorld(World):
         return self.model_agent.act()
 
 
-    def parley(self, user_input):
+    def parley(self, user_input, knowledge_key):
         # with batching
-        print('batching parley')
+        print(f"batching parley with {knowledge_key} facts")
         #user_input = {'inputs': [{'topic': str, 'knowledge': str, 'text': str}, {'topic': str, 'knowledge': str, 'text': str} ...], 'history': [str, str,..]}
         try:
             batch_act = []
@@ -57,7 +57,7 @@ class GeneratorWorld(World):
                     self.model_agent.history.add_reply(utterance.strip())
         
                 act = Message()
-                act['text'] = f"{TOKEN_KNOWLEDGE} {inp['checked_sentence']} {TOKEN_END_KNOWLEDGE}{self.opt['gold_knowledge_delimiter']}{inp['text']}"
+                act['text'] = f"{TOKEN_KNOWLEDGE} {inp[knowledge_key]} {TOKEN_END_KNOWLEDGE}{self.opt['gold_knowledge_delimiter']}{inp['text']}"
                 act['episode_done'] = False
                 
                 batch_act.append(self.model_agent.observe(validate(act)))

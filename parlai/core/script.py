@@ -66,13 +66,16 @@ class ParlaiPreloadModelScript(object):
         self.opt = opt
 
     @abstractmethod
-    def run(self,user_input):
+    def run(self,user_input, knowledge_key):
         """
         The main method.
         Must be implemented by the script writer.
         """
         world = create_task(self.opt, self.agent)
-        response = world.parley(user_input)
+        if '3_sent' in self.opt["model_file"]:
+            response = world.parley(user_input, 'knowledge')
+        if '1_sent' in self.opt["model_file"]:
+            response = world.parley(user_input, 'checked_sentence')
         return response
 
 
