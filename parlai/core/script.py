@@ -66,7 +66,7 @@ class ParlaiPreloadModelScript(object):
         self.opt = opt
 
     @abstractmethod
-    def run(self,user_input, knowledge_key):
+    def run(self, user_input):
         """
         The main method.
         Must be implemented by the script writer.
